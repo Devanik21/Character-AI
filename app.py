@@ -27,8 +27,8 @@ if "text_to_copy" not in st.session_state:
 
 # --- Model and Generation Configuration ---
 st.sidebar.title("⚙️ Model Configuration")
-available_models = ["gemini-1.5-flash", "gemini-pro"] # Add more models if available/needed
-default_model_name = "gemini-1.5-flash"
+available_models = ["gemini-1.5-flash", "gemini-2.0-flash"] # Add more models if available/needed
+default_model_name = "gemini-2.0-flash"
 selected_model = st.sidebar.selectbox(
     "Select Model:",
     available_models,

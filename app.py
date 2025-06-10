@@ -6,7 +6,11 @@ import random # Added for random character selection
 st.sidebar.title("🔑 API Key",page_icon='🎭')
 api_key_input = st.sidebar.text_input("Enter your Gemini API Key:", type="password")
 api_key_configured = False
-
+st.set_page_config(
+    page_title="Character AI",  # or any title you love~
+    page_icon="🎭",  # this sets the favicon / tab icon
+    layout="centered"  # you can also choose "wide" or "centered"
+)
 if api_key_input:
     try:
         configure(api_key=api_key_input)

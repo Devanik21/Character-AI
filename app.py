@@ -74,4 +74,4 @@ if user_input:
     response = model.generate_content(prompt)
     st.session_state.chat_history.append(("user", user_input))
     st.session_state.chat_history.append(("ai", response.text))
-    st.experimental_rerun()
+    st.rerun()

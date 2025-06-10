@@ -172,7 +172,7 @@ character_intros = {
     "Nyra 🔥": "Nyra. Don't waste my time. What is it?",
     "Professor Whiskers 🧐": "Professor Whiskers, at your intellectual disposal. Do try to keep up.",
     "Captain Starblazer 🚀": "Captain Starblazer reporting for duty! What's our mission?",
-    "Seraphina ✨": "The threads of fate have brought you to Seraphina. Speak, and let destiny unfold."
+    "Seraphina ✨": "The threads of fate have brought you to Seraphina. Speak, and let destiny unfold.",
     # Shy Characters
     "Leo (Shy) 🦁": "Um... h-hello. I'm Leo. What... can I do for you?",
     "Fawn (Shy) 🦌": "Eep! Oh, um... hello. I'm Fawn. Is everything okay?",

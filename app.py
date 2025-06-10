@@ -40,11 +40,38 @@ style_prompt = character_styles[character]
 st.title("🎭 Character AI Chat")
 st.markdown("Talk to your chosen character below 💌")
 
-# 💬 Chat input
-user_input = st.text_input("You:", placeholder="Say something...")
+# --- Continuous Chat State ---
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+if "chat_character" not in st.session_state or st.session_state.chat_character != character:
+    st.session_state.chat_history = []
+    st.session_state.chat_character = character
 
-# 🧚 Response area
+# Display chat history
+for speaker, msg in st.session_state.chat_history:
+    if speaker == "user":
+        st.markdown(f"**You:** {msg}")
+    else:
+        st.markdown(f"**{character}**: {msg}")
+
+# 💬 Chat input
+user_input = st.text_input("You:", placeholder="Say something...", key="chat_input")
+
 if user_input:
-    prompt = f"{style_prompt}\nThe user says: '{user_input}'\nHow would you reply?"
+    # Build conversation context for memory
+    conversation = ""
+    for speaker, msg in st.session_state.chat_history[-10:]:
+        if speaker == "user":
+            conversation += f"User: {msg}\n"
+        else:
+            conversation += f"{character}: {msg}\n"
+    prompt = (
+        f"{style_prompt}\n"
+        f"Here is the conversation so far:\n{conversation}"
+        f"User: {user_input}\n"
+        f"{character}:"
+    )
     response = model.generate_content(prompt)
-    st.markdown(f"**{character}**: {response.text}")
+    st.session_state.chat_history.append(("user", user_input))
+    st.session_state.chat_history.append(("ai", response.text))
+    st.experimental_rerun()

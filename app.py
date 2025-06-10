@@ -57,7 +57,8 @@ for speaker, msg in st.session_state.chat_history:
 # 💬 Chat input
 user_input = st.text_input("You:", placeholder="Say something...", key="chat_input")
 
-if user_input:
+# Only respond once per new user input (prevents infinite loop)
+if user_input and (len(st.session_state.chat_history) == 0 or st.session_state.chat_history[-1][0] != "user" or st.session_state.chat_history[-1][1] != user_input):
     # Build conversation context for memory
     conversation = ""
     for speaker, msg in st.session_state.chat_history[-10:]:

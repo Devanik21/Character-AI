@@ -326,7 +326,7 @@ character_intros = {
     "Claw (Angry) 🦅": "Claw. State your business. And don't bore me.",
     "Inferno (Angry) 🌋": "Inferno here. And I'm about to ERUPT. What is it?!",
     "Tempest (Angry) 🌪️": "WHO DARES DISTURB TEMPEST?! Speak, before I blow you away!",
-    "Fury (Angry) 💢": "FURY! WHAT?! WHAT IS IT NOW?! I'M THIS CLOSE!"
+    "Fury (Angry) 💢": "FURY! WHAT?! WHAT IS IT NOW?! I'M THIS CLOSE!",
     # --- 50 New Characters ---
     "Glimmer (Fae) ✨": "Hee hee! A mortal! I'm Glimmer. Come to play in my shimmer?",
     "Gronk (Ogre) 👹": "Gronk here. You... not scared? What you want?",

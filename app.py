@@ -3,7 +3,7 @@ from google.generativeai import GenerativeModel, configure
 import random # Added for random character selection
 
 # 🛡️ Sidebar - API Key Configuration
-st.sidebar.title("🔑 API Key")
+st.sidebar.title("🔑 API Key",page_icon='🎭')
 api_key_input = st.sidebar.text_input("Enter your Gemini API Key:", type="password")
 api_key_configured = False
 

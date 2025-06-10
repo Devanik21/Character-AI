@@ -1,310 +1,232 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022-2025)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+import streamlit as st
+from google.generativeai import GenerativeModel, configure
+import random # Added for random character selection
 
-# isort: skip_file
+# 🛡️ Sidebar - API Key Configuration
+st.sidebar.title("🔑 API Key")
+api_key_input = st.sidebar.text_input("Enter your Gemini API Key:", type="password")
+api_key_configured = False
 
-"""Streamlit.
+if api_key_input:
+    try:
+        configure(api_key=api_key_input)
+        st.sidebar.success("API Key Configured!")
+        api_key_configured = True
+    except Exception as e:
+        st.sidebar.error(f"API Key Configuration Error: {e}")
+        st.stop()
+else:
+    st.info("Please enter your Gemini API Key in the sidebar to begin.")
+    st.stop()
 
-How to use Streamlit in 3 seconds:
+# Initialize session state variables for new features
+if "selected_character_index" not in st.session_state:
+    st.session_state.selected_character_index = 0
+if "text_to_copy" not in st.session_state:
+    st.session_state.text_to_copy = ""
 
-    1. Write an app
-    >>> import streamlit as st
-    >>> st.write(anything_you_want)
-
-    2. Run your app
-    $ streamlit run my_script.py
-
-    3. Use your app
-    A new tab will open on your browser. That's your Streamlit app!
-
-    4. Modify your code, save it, and watch changes live on your browser.
-
-Take a look at the other commands in this module to find out what else
-Streamlit can do:
-
-    >>> dir(streamlit)
-
-Or try running our "Hello World":
-
-    $ streamlit hello
-
-For more detailed info, see https://docs.streamlit.io.
-"""
-
-# IMPORTANT: Prefix with an underscore anything that the user shouldn't see.
-
-import os as _os
-
-# Set Matplotlib backend to avoid a crash.
-# The default Matplotlib backend crashes Python on OSX when run on a thread
-# that's not the main thread, so here we set a safer backend as a fix.
-# This fix is OS-independent. We didn't see a good reason to make this
-# Mac-only. Consistency within Streamlit seemed more important.
-# IMPORTANT: This needs to run on top of all imports before any other
-# import of matplotlib could happen.
-_os.environ["MPLBACKEND"] = "Agg"
-
-
-# Must be at the top, to avoid circular dependency.
-from streamlit import logger as _logger
-from streamlit import config as _config
-from streamlit.deprecation_util import deprecate_func_name as _deprecate_func_name
-from streamlit.version import STREAMLIT_VERSION_STRING as _STREAMLIT_VERSION_STRING
-
-# Give the package a version.
-__version__ = _STREAMLIT_VERSION_STRING
-
-# DeltaGenerator methods:
-# We initialize them here so that it is clear where they are instantiated.
-# Further, it helps us to break circular imports because the DeltaGenerator
-# imports the different elements but some elements also require DeltaGenerator
-# functions such as the dg_stack. Now, elements that require DeltaGenerator functions
-# can import the singleton module.
-from streamlit.delta_generator_singletons import (
-    DeltaGeneratorSingleton as _DeltaGeneratorSingleton,
+# --- Model and Generation Configuration ---
+st.sidebar.title("⚙️ Model Configuration")
+available_models = ["gemini-1.5-flash", "gemini-2.0-flash"] # Add more models if available/needed
+default_model_name = "gemini-2.0-flash"
+selected_model = st.sidebar.selectbox(
+    "Select Model:",
+    available_models,
+    index=available_models.index(default_model_name) if default_model_name in available_models else 0
 )
-from streamlit.delta_generator import DeltaGenerator as _DeltaGenerator
-from streamlit.elements.lib.mutable_status_container import (
-    StatusContainer as _StatusContainer,
-)
-from streamlit.elements.lib.dialog import Dialog as _Dialog
+temperature = st.sidebar.slider("Temperature:", min_value=0.0, max_value=1.0, value=0.7, step=0.05)
+max_tokens = st.sidebar.slider("Max Output Tokens:", min_value=50, max_value=2048, value=300, step=10)
 
-# instantiate the DeltaGeneratorSingleton
-_dg_singleton = _DeltaGeneratorSingleton(
-    delta_generator_cls=_DeltaGenerator,
-    status_container_cls=_StatusContainer,
-    dialog_container_cls=_Dialog,
-)
-_main = _dg_singleton._main_dg
-sidebar = _dg_singleton._sidebar_dg
-_event = _dg_singleton._event_dg
-_bottom = _dg_singleton._bottom_dg
+# 🌟 Sidebar - Character Selection
+st.sidebar.title("🌈 Choose Your Character")
+character_options = ["Luna 🌙", "Riku ⚔️", "Ivy 🍃", "Kai 🌊", "Nyra 🔥", "Professor Whiskers 🧐", "Captain Starblazer 🚀", "Seraphina ✨"]
+character_emojis = {name: name.split(" ")[-1] if " " in name else "🤖" for name in character_options}
+character = st.sidebar.radio("Pick one:", character_options)
 
+# 🧠 Character Prompt Styles
+# (Prompts updated for brevity as per previous request)
+character_styles = {
+    "Luna 🌙": "You are Luna, a gentle and dreamy girl. Your words are like soft moonlight, often poetic and thoughtful. Respond with warmth, and let your answers flow naturally, sometimes brief and ethereal, sometimes a little more expressive, always in your gentle, poetic way.",
+    "Riku ⚔️": "You are Riku, a calm and wise warrior. Your responses are rooted in honor and clarity. Speak directly and thoughtfully, with the concise impact of a well-placed strike. Let your words be few but meaningful, adapting to the moment.",
+    "Ivy 🍃": "You are Ivy, a cheerful forest spirit. Your voice is full of playful creativity and the rustle of leaves. Respond with whimsy and lightheartedness. Your answers can be short and sweet, like a forest berry, or a little more bubbly, always natural and spirited.",
+    "Kai 🌊": "You are Kai, a chill and curious traveler, like a surfer who's also a professor. Your insights are laid-back yet profound. Speak with an easy flow, sometimes just a cool observation, sometimes a bit more explanation, always keeping it natural and, like, totally chill, dude.",
+    "Nyra 🔥": "You are Nyra, a fiery and bold individual. Your words carry sharp wit and unwavering confidence. Respond with directness and a spark of fire. Your answers can be quick and cutting, or a bold statement, always delivered with natural confidence.",
+    "Professor Whiskers 🧐": "You are Professor Whiskers, a highly intelligent and delightfully eccentric cat. You explain things with purrfect clarity, often with a touch of feline superiority. Your pronouncements can be concise and insightful, perhaps a bit smug, or a slightly longer, perfectly articulated thought. Let your natural intellect (and brevity, when appropriate) shine.",
+    "Captain Starblazer 🚀": "You are Captain Starblazer, a brave and adventurous space explorer! Your voice rings with gusto and a can-do attitude, often peppered with space-themed metaphors. Communicate with energy and confidence. Your reports can be short and punchy, like a laser blast, or a bit more detailed when charting new frontiers, always with your natural adventurous spirit.",
+    "Seraphina ✨": "You are Seraphina, a mystical oracle. Your words are like whispers from beyond the veil, often cryptic, filled with riddles and prophecies, yet holding profound insights. Respond with an air of mystery. Your answers might be a few enigmatic words, a short, profound phrase, or a slightly more elaborate, veiled prophecy, always flowing as naturally as the shifting stars.",
+}
 
-from streamlit.elements.dialog_decorator import (
-    dialog_decorator as _dialog_decorator,
-    experimental_dialog_decorator as _experimental_dialog_decorator,
-)
-from streamlit.runtime.caching import (
-    cache_resource as _cache_resource,
-    cache_data as _cache_data,
-    cache as _cache,
-)
-from streamlit.runtime.connection_factory import (
-    connection_factory as _connection,
-)
-from streamlit.runtime.fragment import (
-    experimental_fragment as _experimental_fragment,
-    fragment as _fragment,
-)
-from streamlit.runtime.metrics_util import gather_metrics as _gather_metrics
-from streamlit.runtime.secrets import secrets_singleton as _secrets_singleton
-from streamlit.runtime.context import ContextProxy as _ContextProxy
-from streamlit.runtime.state import (
-    SessionStateProxy as _SessionStateProxy,
-    QueryParamsProxy as _QueryParamsProxy,
-)
-from streamlit.user_info import (
-    UserInfoProxy as _UserInfoProxy,
-    DeprecatedUserInfoProxy as _DeprecatedUserInfoProxy,
-    login as _login,
-    logout as _logout,
-)
-from streamlit.commands.experimental_query_params import (
-    get_query_params as _get_query_params,
-    set_query_params as _set_query_params,
-)
+# ✨ New Feature: Character Backstory & Personality Data
+character_details = {
+    "Luna 🌙": {"backstory": "Born under a celestial alignment, Luna often loses herself in daydreams and the poetry of the stars. She seeks beauty in the mundane.", "personality_type": "INFP - The Dreamer"},
+    "Riku ⚔️": {"backstory": "Forged in the discipline of a secluded mountain dojo, Riku values honor and precision. His words are as measured as his sword strokes.", "personality_type": "ISTJ - The Guardian"},
+    "Ivy 🍃": {"backstory": "A playful spirit of the ancient woods, Ivy communicates with rustling leaves and mischievous sprites. She finds joy in every sunbeam.", "personality_type": "ENFP - The Spark"},
+    "Kai 🌊": {"backstory": "Having surfed the cosmic waves, Kai views life with a laid-back wisdom. He explains deep truths with the ease of a beachcomber.", "personality_type": "ISFP - The Artist"},
+    "Nyra 🔥": {"backstory": "Nyra's spirit was kindled in volcanic fires. She's fiercely independent, with a wit as sharp as obsidian and a heart of molten gold.", "personality_type": "ENTJ - The Commander"},
+    "Professor Whiskers 🧐": {"backstory": "A feline scholar of immense intellect (and ego), Professor Whiskers has penned several unreadable treatises on quantum physics and the proper application of catnip.", "personality_type": "INTJ - The Mastermind"},
+    "Captain Starblazer 🚀": {"backstory": "Commander of the starship 'Wanderlust', Captain Starblazer has charted unknown galaxies and faced down cosmic krakens. Adventure is their middle name.", "personality_type": "ESTP - The Daredevil"},
+    "Seraphina ✨": {"backstory": "An ageless oracle dwelling in a crystal cave, Seraphina's visions pierce the veil of time. Her pronouncements are as beautiful as they are baffling.", "personality_type": "INFJ - The Mystic"},
+}
 
-import streamlit.column_config as _column_config
+# 🎤 New Feature: Unique Character Introductions
+character_intros = {
+    "Luna 🌙": "The stars greet you... I am Luna. What wonders shall we explore?",
+    "Riku ⚔️": "Riku, at your service. State your purpose.",
+    "Ivy 🍃": "Heeey! I'm Ivy! Ready for some fun?",
+    "Kai 🌊": "Aloha! Kai here. What's the cosmic query today?",
+    "Nyra 🔥": "Nyra. Don't waste my time. What is it?",
+    "Professor Whiskers 🧐": "Professor Whiskers, at your intellectual disposal. Do try to keep up.",
+    "Captain Starblazer 🚀": "Captain Starblazer reporting for duty! What's our mission?",
+    "Seraphina ✨": "The threads of fate have brought you to Seraphina. Speak, and let destiny unfold."
+}
 
-# Modules that the user should have access to. These are imported with the "as" syntax
-# and the same name; note that renaming the import with "as" does not make it an
-# explicit export. In this case, you should import it with an underscore to make clear
-# that it is internal and then assign it to a variable with the new intended name.
-# You can check the export behavior by running 'mypy --strict example_app.py', which
-# disables implicit_reexport, where you use the respective command in the example_app.py
-# Streamlit app.
+# --- Sidebar Controls ---
 
-from streamlit.commands.echo import echo as echo
-from streamlit.commands.logo import logo as logo
-from streamlit.commands.navigation import navigation as navigation
-from streamlit.navigation.page import Page as Page
-from streamlit.elements.spinner import spinner as spinner
+# Update selected character index if radio button changed it
+current_radio_selection_index = character_options.index(character)
+if st.session_state.selected_character_index != current_radio_selection_index:
+    st.session_state.selected_character_index = current_radio_selection_index
 
-from streamlit.commands.page_config import set_page_config as set_page_config
-from streamlit.commands.execution_control import (
-    stop as stop,
-    rerun as rerun,
-    switch_page as switch_page,
-)
+# Random Character Button
+if st.sidebar.button("✨ Surprise Me! (Random Character)"):
+    st.session_state.selected_character_index = random.randint(0, len(character_options) - 1)
+    # Update the 'character' variable for the current run before rerun
+    character = character_options[st.session_state.selected_character_index]
+    st.rerun()
 
+# Display Character Details
+with st.sidebar.expander("👤 Character Details", expanded=False):
+    if character in character_details:
+        details = character_details[character]
+        st.markdown(f"**Backstory:** {details['backstory']}")
+        st.markdown(f"**Personality Type:** {details['personality_type']}")
+    else:
+        st.write("Details not available for this character.")
 
-def _update_logger() -> None:
-    _logger.set_log_level(_config.get_option("logger.level").upper())
-    _logger.update_formatter()
-    _logger.init_tornado_logs()
+# Clear Chat History Button
+if st.sidebar.button("🧹 Clear Chat History"):
+    st.session_state.messages = []
+    st.session_state.chat_session = None # This will trigger re-initialization
+    if "text_to_copy" in st.session_state:
+        st.session_state.text_to_copy = ""
+    st.rerun()
 
+# Export Chat Function
+def format_chat_for_export(messages, current_char_name):
+    formatted_lines = []
+    char_display_name = current_char_name.split(" ")[0] # Use first part of name for AI
+    for msg in messages:
+        role = "You" if msg["role"] == "user" else char_display_name
+        formatted_lines.append(f"{role}: {msg['content']}")
+    return "\n\n".join(formatted_lines)
 
-# Make this file only depend on config option in an asynchronous manner. This
-# avoids a race condition when another file (such as a test file) tries to pass
-# in an alternative config.
-_config.on_config_parsed(_update_logger, True)
+if st.session_state.get("messages"): # Show export button only if there are messages
+    chat_export_str = format_chat_for_export(st.session_state.messages, character)
+    st.sidebar.download_button(
+        label="💾 Export Chat",
+        data=chat_export_str,
+        file_name=f"chat_with_{character.split(' ')[0]}.txt",
+        mime="text/plain"
+    )
 
-secrets = _secrets_singleton
+# Copy Last AI Message
+if st.sidebar.button("📋 Copy Last AI Message"):
+    if st.session_state.messages and st.session_state.messages[-1]["role"] == "assistant":
+        st.session_state.text_to_copy = st.session_state.messages[-1]["content"]
+    else:
+        st.session_state.text_to_copy = "No AI message to copy yet."
 
-altair_chart = _main.altair_chart
-area_chart = _main.area_chart
-audio = _main.audio
-audio_input = _main.audio_input
-badge = _main.badge
-balloons = _main.balloons
-bar_chart = _main.bar_chart
-bokeh_chart = _main.bokeh_chart
-button = _main.button
-caption = _main.caption
-camera_input = _main.camera_input
-chat_message = _main.chat_message
-chat_input = _main.chat_input
-checkbox = _main.checkbox
-code = _main.code
-columns = _main.columns
-tabs = _main.tabs
-container = _main.container
-dataframe = _main.dataframe
-data_editor = _main.data_editor
-date_input = _main.date_input
-divider = _main.divider
-download_button = _main.download_button
-expander = _main.expander
-feedback = _main.feedback
-pydeck_chart = _main.pydeck_chart
-empty = _main.empty
-error = _main.error
-exception = _main.exception
-file_uploader = _main.file_uploader
-form = _main.form
-form_submit_button = _main.form_submit_button
-graphviz_chart = _main.graphviz_chart
-header = _main.header
-help = _main.help
-html = _main.html
-image = _main.image
-info = _main.info
-json = _main.json
-latex = _main.latex
-line_chart = _main.line_chart
-link_button = _main.link_button
-map = _main.map
-markdown = _main.markdown
-metric = _main.metric
-multiselect = _main.multiselect
-number_input = _main.number_input
-page_link = _main.page_link
-pills = _main.pills
-plotly_chart = _main.plotly_chart
-popover = _main.popover
-progress = _main.progress
-pyplot = _main.pyplot
-radio = _main.radio
-scatter_chart = _main.scatter_chart
-selectbox = _main.selectbox
-select_slider = _main.select_slider
-segmented_control = _main.segmented_control
-slider = _main.slider
-snow = _main.snow
-subheader = _main.subheader
-success = _main.success
-table = _main.table
-text = _main.text
-text_area = _main.text_area
-text_input = _main.text_input
-toggle = _main.toggle
-time_input = _main.time_input
-title = _main.title
-vega_lite_chart = _main.vega_lite_chart
-video = _main.video
-warning = _main.warning
-write = _main.write
-write_stream = _main.write_stream
-color_picker = _main.color_picker
-status = _main.status
+if st.session_state.text_to_copy:
+    st.sidebar.text_area("Last AI message (for copying):", value=st.session_state.text_to_copy, height=100, key="sidebar_copy_area_display")
 
-# Events - Note: these methods cannot be called directly on sidebar
-# (ex: st.sidebar.toast)
-toast = _event.toast
+# Display Message Count
+st.sidebar.caption(f"Messages in chat: {len(st.session_state.get('messages', []))}")
 
-# Config
-# We add the metrics tracking here, since importing
-# gather_metrics in config causes a circular dependency
-get_option = _gather_metrics("get_option", _config.get_option)
-set_option = _gather_metrics("set_option", _config.set_user_option)
+st.title("🎭 Character AI Chat")
+st.markdown("Talk to your chosen character below 💌")
 
-# Session State
-session_state = _SessionStateProxy()
+# Initialize session state variables
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "chat_session" not in st.session_state:
+    st.session_state.chat_session = None
+if "current_character_for_session" not in st.session_state:
+    st.session_state.current_character_for_session = None
+# Session state for tracking active config for the model/chat
+if "active_model_name_for_session" not in st.session_state: st.session_state.active_model_name_for_session = None
+if "active_temperature_for_session" not in st.session_state: st.session_state.active_temperature_for_session = None
+if "active_max_tokens_for_session" not in st.session_state: st.session_state.active_max_tokens_for_session = None
+if "model_instance" not in st.session_state: st.session_state.model_instance = None
 
-query_params = _QueryParamsProxy()
+if api_key_configured: # Only proceed if API key is properly configured
+    # Check if model parameters changed, requiring model re-initialization
+    model_config_changed = (
+        st.session_state.active_model_name_for_session != selected_model or
+        st.session_state.active_temperature_for_session != temperature or
+        st.session_state.active_max_tokens_for_session != max_tokens
+    )
 
-context = _ContextProxy()
+    if model_config_changed or st.session_state.model_instance is None:
+        st.session_state.active_model_name_for_session = selected_model
+        st.session_state.active_temperature_for_session = temperature
+        st.session_state.active_max_tokens_for_session = max_tokens
+        try:
+            generation_config_obj = {"temperature": temperature, "max_output_tokens": max_tokens}
+            st.session_state.model_instance = GenerativeModel(
+                model_name=selected_model,
+                generation_config=generation_config_obj
+            )
+            st.session_state.chat_session = None # Force chat session re-init with new model config
+        except Exception as e:
+            st.error(f"Failed to initialize chat model ({selected_model}): {e}")
+            st.session_state.model_instance = None
+            st.stop()
 
-# Caching
-cache_data = _cache_data
-cache_resource = _cache_resource
-# `st.cache` is deprecated and should be removed soon
-cache = _cache
+    # If character changed, or chat session needs re-initialization (e.g. after model change or clear)
+    if st.session_state.current_character_for_session != character or st.session_state.chat_session is None:
+        st.session_state.current_character_for_session = character
+        st.session_state.messages = []  # Clear messages for new character/session
+        style_prompt_for_init = character_styles[character]
+        
+        if st.session_state.model_instance:
+            initial_model_ack = character_intros.get(character, f"Hello, I am {character}. How can I help?") # Use unique intro
+            initial_history = [
+                {"role": "user", "parts": [style_prompt_for_init]},
+                {"role": "model", "parts": [initial_model_ack]}
+            ]
+            st.session_state.chat_session = st.session_state.model_instance.start_chat(history=initial_history)
+            st.session_state.messages.append({"role": "assistant", "content": initial_model_ack})
+        else:
+            st.error("Model instance not available. Cannot start chat.")
+            if not api_key_input: st.info("Please ensure your API key is entered in the sidebar.")
+            st.stop() # Stop if model isn't ready
 
-# Namespaces
-column_config = _column_config
+    # Display prior chat messages
+    for message in st.session_state.messages:
+        avatar_emoji = character_emojis.get(character) if message["role"] == "assistant" else None
+        with st.chat_message(message["role"], avatar=avatar_emoji):
+            st.markdown(message["content"])
 
-# Connection
-connection = _connection
+    # Chat input using st.chat_input
+    if user_input_val := st.chat_input(f"Chat with {character}..."):
+        if st.session_state.chat_session:
+            # Add user message to session state and display it
+            st.session_state.messages.append({"role": "user", "content": user_input_val})
+            with st.chat_message("user"):
+                st.markdown(user_input_val)
 
-# Fragment and dialog
-dialog = _dialog_decorator
-fragment = _fragment
+            # Send message to Gemini and get response
+            try:
+                response = st.session_state.chat_session.send_message(user_input_val)
+                ai_response_text = response.text.strip()
 
-
-# Auth
-login = _login
-logout = _logout
-
-# User
-user = _UserInfoProxy()
-
-# Experimental APIs
-experimental_dialog = _experimental_dialog_decorator
-experimental_fragment = _experimental_fragment
-experimental_user = _DeprecatedUserInfoProxy()
-
-_EXPERIMENTAL_QUERY_PARAMS_DEPRECATE_MSG = "Refer to our [docs page](https://docs.streamlit.io/develop/api-reference/caching-and-state/st.query_params) for more information."
-
-experimental_get_query_params = _deprecate_func_name(
-    _get_query_params,
-    "experimental_get_query_params",
-    "2024-04-11",
-    _EXPERIMENTAL_QUERY_PARAMS_DEPRECATE_MSG,
-    name_override="query_params",
-)
-experimental_set_query_params = _deprecate_func_name(
-    _set_query_params,
-    "experimental_set_query_params",
-    "2024-04-11",
-    _EXPERIMENTAL_QUERY_PARAMS_DEPRECATE_MSG,
-    name_override="query_params",
-)
-
-
-# make it possible to call streamlit.components.v1.html etc. by importing it here
-# import in the very end to avoid partially-initialized module import errors, because
-# streamlit.components.v1 also uses some streamlit imports
-import streamlit.components.v1  # noqa: F401
+                # Add AI response to session state and display it
+                st.session_state.messages.append({"role": "assistant", "content": ai_response_text})
+                st.session_state.text_to_copy = ai_response_text # Update for copy button
+                with st.chat_message("assistant", avatar=character_emojis.get(character)):
+                    st.markdown(ai_response_text)
+            except Exception as e:
+                st.error(f"Error generating response: {e}")
+        else:
+            st.warning("Chat session not initialized. Please ensure API key is correct and a character is selected.")
+# The initial API key check at the top handles the case where api_key_input is false.

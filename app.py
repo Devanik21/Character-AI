@@ -2,8 +2,19 @@ import streamlit as st
 from google.generativeai import GenerativeModel, configure
 import os
 
-# 🛡️ Configure your Gemini API key (keep it secret~!)
-configure(api_key=st.secrets["GEMINI_API_KEY"])
+# 🛡️ Sidebar - API Key Configuration
+st.sidebar.title("🔑 API Key")
+api_key_input = st.sidebar.text_input("Enter your Gemini API Key:", type="password")
+
+if api_key_input:
+    try:
+        configure(api_key=api_key_input)
+    except Exception as e:
+        st.sidebar.error(f"API Key Configuration Error: {e}")
+        st.stop()
+else:
+    st.info("Please enter your Gemini API Key in the sidebar to begin.")
+    st.stop()
 
 # 🌟 Sidebar - Character Selection
 st.sidebar.title("🌈 Choose Your Character")

@@ -7,6 +7,69 @@ st.set_page_config(
     page_icon="🎭",  # this sets the favicon / tab icon
     layout="centered"  # you can also choose "wide" or "centered"
 )
+
+# --- Custom Dark Theme CSS ---
+st.markdown("""
+<style>
+    /* General Body and Text */
+    body {
+        color: #E0E0E0; /* Light grey text */
+        background-color: #121212; /* Very dark background */
+    }
+    .stApp {
+        background-color: #121212; /* Ensure app background is also dark */
+    }
+
+    /* Titles */
+    h1, h2, h3, h4, h5, h6 {
+        color: #BB86FC; /* Light purple for titles */
+    }
+    h1 { text-align: center; }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #1E1E1E; /* Dark grey for sidebar */
+        border-right: 1px solid #333333;
+    }
+    [data-testid="stSidebar"] .stRadio > label span, /* Radio button labels */
+    [data-testid="stSidebar"] .stButton > button,
+    [data-testid="stSidebar"] .stSelectbox > label,
+    [data-testid="stSidebar"] .stSlider > label,
+    [data-testid="stSidebar"] .stTextInput > label,
+    [data-testid="stSidebar"] .stTextArea > label,
+    [data-testid="stSidebar"] .stDownloadButton > button,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] small,
+    [data-testid="stSidebar"] li,
+    [data-testid="stSidebar"] summary /* Expander header */ {
+        color: #E0E0E0 !important;
+    }
+    [data-testid="stSidebar"] .stButton > button {
+        background-color: #3A3A3A; color: #BB86FC; border: 1px solid #BB86FC;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background-color: #BB86FC; color: #1E1E1E;
+    }
+    [data-testid="stSidebar"] .stDownloadButton > button {
+        background-color: #03DAC6; color: #121212; border: none;
+    }
+    [data-testid="stSidebar"] .stDownloadButton > button:hover {
+        background-color: #018786;
+    }
+
+    /* Chat Messages */
+    [data-testid="stChatMessage"] {
+        background-color: #2C2C2C; border-radius: 8px; border: 1px solid #383838;
+    }
+
+    /* Chat Input */
+    [data-testid="stChatInput"] textarea { background-color: #2C2C2C; color: #E0E0E0; border: 1px solid #444; }
+    [data-testid="stChatInput"] button { background-color: #BB86FC; color: #121212; border: none; }
+    [data-testid="stChatInput"] button:hover { background-color: #9e66d4; }
+
+</style>
+""", unsafe_allow_html=True)
+
 # 🛡️ Sidebar - API Key Configuration
 st.sidebar.title("🔑 API Key")
 api_key_input = st.sidebar.text_input("Enter your Gemini API Key:", type="password")
@@ -486,8 +549,8 @@ if st.session_state.text_to_copy:
 # Display Message Count
 st.sidebar.caption(f"Messages in chat: {len(st.session_state.get('messages', []))}")
 
-st.title("🎭 Character AI Chat")
-st.markdown("Talk to your chosen character below 💌")
+st.markdown("<h1 style='text-align: center; color: #BB86FC;'>🎭 Character AI Chat 🎭</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #B0B0B0; font-style: italic;'>Talk to your chosen character below 💌</p>", unsafe_allow_html=True)
 
 # Initialize session state variables
 if "messages" not in st.session_state:

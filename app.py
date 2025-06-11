@@ -22,7 +22,7 @@ st.markdown("""
 
     /* Titles */
     h1, h2, h3, h4, h5, h6 {
-        color: #BB86FC; /* Light purple for titles */
+        color: #4DB6AC; /* Dark Teal for titles */
     }
     h1 { text-align: center; }
 
@@ -47,11 +47,11 @@ st.markdown("""
         color: #C0C0C0 !important; /* Slightly softer grey for sidebar text for less harshness */
     }
     [data-testid="stSidebar"] .stButton > button {
-        background-color: #333333; color: #BB86FC; border: 1px solid #BB86FC;
+        background-color: #333333; color: #4DB6AC; border: 1px solid #4DB6AC;
         border-radius: 5px;
     }
     [data-testid="stSidebar"] .stButton > button:hover {
-        background-color: #BB86FC; color: #1E1E1E;
+        background-color: #4DB6AC; color: #FFFFFF; /* White text for better contrast on teal */
     }
     [data-testid="stSidebar"] .stDownloadButton > button {
         background-color: #03DAC6; color: #121212; border: none;
@@ -74,14 +74,14 @@ st.markdown("""
         border-radius: 8px;
     }
     [data-testid="stChatInput"] button {
-        background-color: #BB86FC;
+        background-color: #4DB6AC; /* Dark Teal */
         color: #121212;
         border: none;
         border-radius: 8px;
     }
     [data-testid="stChatInput"] button:hover {
-        background-color: #9e66d4;
-        color: #0A0A0A;
+        background-color: #00897B; /* Darker Teal for hover */
+        color: #FFFFFF; /* White text for better contrast */
     }
 
     /* --- Additional Dark Theme Decorations --- */
@@ -103,8 +103,8 @@ st.markdown("""
     [data-testid="stDateInput"] input:focus,
     [data-testid="stTimeInput"] input:focus,
     [data-testid="stTextArea"] textarea:focus {
-        border-color: #BB86FC;
-        box-shadow: 0 0 0 0.2rem rgba(187, 134, 252, 0.25);
+        border-color: #4DB6AC; /* Dark Teal */
+        box-shadow: 0 0 0 0.2rem rgba(77, 182, 172, 0.25); /* Dark Teal shadow */
     }
 
     /* Selectbox & Multiselect */
@@ -131,27 +131,27 @@ st.markdown("""
         background-color: #3A3A3A;
     }
     div[data-baseweb="popover"] ul[role="listbox"] li[aria-selected="true"] {
-        background-color: #BB86FC;
+        background-color: #4DB6AC; /* Dark Teal */
         color: #121212;
     }
 
     /* Slider */
     [data-testid="stSlider"] div[data-baseweb="slider"] > div:nth-child(2) { /* Track fill */
-        background-color: #BB86FC;
+        background-color: #4DB6AC; /* Dark Teal */
     }
     [data-testid="stSlider"] div[data-baseweb="slider"] > div:nth-child(1) { /* Track background */
         background-color: #3A3A3A;
     }
     [data-testid="stSlider"] div[role="slider"] { /* Thumb */
-        border: 2px solid #BB86FC;
+        border: 2px solid #4DB6AC; /* Dark Teal */
         background-color: #E0E0E0;
-        box-shadow: 0 0 5px rgba(187, 134, 252, 0.5);
+        box-shadow: 0 0 5px rgba(77, 182, 172, 0.5); /* Dark Teal shadow */
     }
 
     /* Expander */
     [data-testid="stExpander"] summary {
         background-color: #252525;
-        color: #BB86FC;
+        color: #4DB6AC; /* Dark Teal */
         border: 1px solid #383838;
         border-radius: 6px 6px 0 0;
         padding: 0.5rem 1rem;
@@ -186,7 +186,7 @@ st.markdown("""
 
     /* Progress Bar */
     [data-testid="stProgressBar"] > div > div {
-        background-color: #BB86FC; /* Progress bar fill */
+        background-color: #4DB6AC; /* Dark Teal for Progress bar fill */
     }
     [data-testid="stProgressBar"] {
         background-color: #3A3A3A; /* Progress bar background */
@@ -674,7 +674,7 @@ if st.session_state.text_to_copy:
 # Display Message Count
 st.sidebar.caption(f"Messages in chat: {len(st.session_state.get('messages', []))}")
 
-st.markdown("<h1 style='text-align: center; color: #BB86FC;'>🎭 Character AI Chat 🎭</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #4DB6AC;'>🎭 Character AI Chat 🎭</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #B0B0B0; font-style: italic;'>Talk to your chosen character below 💌</p>", unsafe_allow_html=True)
 
 # Initialize session state variables

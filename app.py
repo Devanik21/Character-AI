@@ -29,12 +29,14 @@ st.markdown("""
     /* Sidebar */
     [data-testid="stSidebar"] {
         background-color: #1E1E1E; /* Dark grey for sidebar */
-        border-right: 1px solid #333333;
+        border-right: 1px solid #383838; /* Slightly darker border for sidebar */
     }
     [data-testid="stSidebar"] .stRadio > label span, /* Radio button labels */
     [data-testid="stSidebar"] .stButton > button,
     [data-testid="stSidebar"] .stSelectbox > label,
+    [data-testid="stSidebar"] [data-testid="stMultiSelect"] label,
     [data-testid="stSidebar"] .stSlider > label,
+    [data-testid="stSidebar"] [data-testid="stNumberInput"] label,
     [data-testid="stSidebar"] .stTextInput > label,
     [data-testid="stSidebar"] .stTextArea > label,
     [data-testid="stSidebar"] .stDownloadButton > button,
@@ -42,10 +44,11 @@ st.markdown("""
     [data-testid="stSidebar"] small,
     [data-testid="stSidebar"] li,
     [data-testid="stSidebar"] summary /* Expander header */ {
-        color: #E0E0E0 !important;
+        color: #C0C0C0 !important; /* Slightly softer grey for sidebar text for less harshness */
     }
     [data-testid="stSidebar"] .stButton > button {
-        background-color: #3A3A3A; color: #BB86FC; border: 1px solid #BB86FC;
+        background-color: #333333; color: #BB86FC; border: 1px solid #BB86FC;
+        border-radius: 5px;
     }
     [data-testid="stSidebar"] .stButton > button:hover {
         background-color: #BB86FC; color: #1E1E1E;
@@ -54,18 +57,140 @@ st.markdown("""
         background-color: #03DAC6; color: #121212; border: none;
     }
     [data-testid="stSidebar"] .stDownloadButton > button:hover {
-        background-color: #018786;
+        background-color: #018786; color: #E0E0E0;
     }
 
     /* Chat Messages */
     [data-testid="stChatMessage"] {
-        background-color: #2C2C2C; border-radius: 8px; border: 1px solid #383838;
+        background-color: #2A2A2A; border-radius: 10px; border: 1px solid #404040;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
     /* Chat Input */
-    [data-testid="stChatInput"] textarea { background-color: #2C2C2C; color: #E0E0E0; border: 1px solid #444; }
-    [data-testid="stChatInput"] button { background-color: #BB86FC; color: #121212; border: none; }
-    [data-testid="stChatInput"] button:hover { background-color: #9e66d4; }
+    [data-testid="stChatInput"] textarea {
+        background-color: #252525;
+        color: #E0E0E0;
+        border: 1px solid #4A4A4A;
+        border-radius: 8px;
+    }
+    [data-testid="stChatInput"] button {
+        background-color: #BB86FC;
+        color: #121212;
+        border: none;
+        border-radius: 8px;
+    }
+    [data-testid="stChatInput"] button:hover {
+        background-color: #9e66d4;
+        color: #0A0A0A;
+    }
+
+    /* --- Additional Dark Theme Decorations --- */
+
+    /* General Input Fields (Text, Number, Date, Time) */
+    [data-testid="stTextInput"] input,
+    [data-testid="stNumberInput"] input,
+    [data-testid="stDateInput"] input,
+    [data-testid="stTimeInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background-color: #2C2C2C;
+        color: #E0E0E0;
+        border: 1px solid #4A4A4A;
+        border-radius: 6px;
+        padding: 10px;
+    }
+    [data-testid="stTextInput"] input:focus,
+    [data-testid="stNumberInput"] input:focus,
+    [data-testid="stDateInput"] input:focus,
+    [data-testid="stTimeInput"] input:focus,
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: #BB86FC;
+        box-shadow: 0 0 0 0.2rem rgba(187, 134, 252, 0.25);
+    }
+
+    /* Selectbox & Multiselect */
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+        background-color: #2C2C2C;
+        color: #E0E0E0;
+        border: 1px solid #4A4A4A;
+        border-radius: 6px;
+    }
+    [data-testid="stSelectbox"] div[data-baseweb="select"] input,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] input {
+        color: #E0E0E0 !important; /* Input text color within select */
+    }
+    /* Dropdown menu for selectbox/multiselect */
+    div[data-baseweb="popover"] ul[role="listbox"] {
+        background-color: #2C2C2C;
+        border: 1px solid #4A4A4A;
+    }
+    div[data-baseweb="popover"] ul[role="listbox"] li {
+        color: #E0E0E0;
+    }
+    div[data-baseweb="popover"] ul[role="listbox"] li:hover {
+        background-color: #3A3A3A;
+    }
+    div[data-baseweb="popover"] ul[role="listbox"] li[aria-selected="true"] {
+        background-color: #BB86FC;
+        color: #121212;
+    }
+
+    /* Slider */
+    [data-testid="stSlider"] div[data-baseweb="slider"] > div:nth-child(2) { /* Track fill */
+        background-color: #BB86FC;
+    }
+    [data-testid="stSlider"] div[data-baseweb="slider"] > div:nth-child(1) { /* Track background */
+        background-color: #3A3A3A;
+    }
+    [data-testid="stSlider"] div[role="slider"] { /* Thumb */
+        border: 2px solid #BB86FC;
+        background-color: #E0E0E0;
+        box-shadow: 0 0 5px rgba(187, 134, 252, 0.5);
+    }
+
+    /* Expander */
+    [data-testid="stExpander"] summary {
+        background-color: #252525;
+        color: #BB86FC;
+        border: 1px solid #383838;
+        border-radius: 6px 6px 0 0;
+        padding: 0.5rem 1rem;
+    }
+    [data-testid="stExpander"] summary:hover {
+        background-color: #303030;
+    }
+    [data-testid="stExpander"] div[role="region"] {
+        background-color: #1E1E1E;
+        border: 1px solid #383838;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        padding: 1rem;
+    }
+
+    /* Alerts (Info, Success, Warning, Error) */
+    div[data-baseweb="alert"] {
+        background-color: #2C2C2C;
+        color: #E0E0E0;
+        border-left: 5px solid;
+        border-radius: 6px;
+        padding: 1rem;
+    }
+    div[data-baseweb="alert"][role="alert"] > div:first-child { /* Icon container */
+        color: #E0E0E0;
+    }
+    /* Specific alert types */
+    .stAlert[data-stale="false"] > div[data-baseweb="alert"][role="status"] { border-left-color: #64B5F6; } /* Info - Muted Blue */
+    .stAlert[data-stale="false"] > div[data-baseweb="alert"][role="alert"] { border-left-color: #CF6679; } /* Error - Muted Red */
+    .stAlert[data-stale="false"] > div[data-baseweb="alert"][role="status"].st-emotion-cache-1wmy9hl { border-left-color: #FFB74D; } /* Warning - Muted Orange */
+    .stAlert[data-stale="false"] > div[data-baseweb="alert"][role="status"].st-emotion-cache-j6qv4b { border-left-color: #03DAC6; } /* Success - Teal */
+
+    /* Progress Bar */
+    [data-testid="stProgressBar"] > div > div {
+        background-color: #BB86FC; /* Progress bar fill */
+    }
+    [data-testid="stProgressBar"] {
+        background-color: #3A3A3A; /* Progress bar background */
+    }
 
 </style>
 """, unsafe_allow_html=True)
